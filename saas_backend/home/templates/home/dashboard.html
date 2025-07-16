@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - SaaS Application{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Dashboard</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Welcome to Your Dashboard</h5>
+                </div>
+                <div class="card-body">
+                    <p>Hello, <strong>{{ user.username }}</strong>! You're successfully logged in.</p>
+                    <p>Your email: <strong>{{ email }}</strong></p>
+                    <hr>
+                    <p>This is your personal dashboard where you can manage your SaaS application.</p>
+                    <div class="mt-4">
+                        <h6>Quick Actions:</h6>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary">View Profile</button>
+                            <button type="button" class="btn btn-outline-primary">Settings</button>
+                            <button type="button" class="btn btn-outline-primary">Help</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">No recent activity to display.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Account Summary</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-6">Status:</dt>
+                        <dd class="col-sm-6"><span class="badge bg-success">Active</span></dd>
+                        
+                        <dt class="col-sm-6">Member Since:</dt>
+                        <dd class="col-sm-6">{{ user.date_joined|date:"M d, Y" }}</dd>
+                        
+                        <dt class="col-sm-6">Last Login:</dt>
+                        <dd class="col-sm-6">{{ user.last_login|date:"M d, Y H:i" }}</dd>
+                    </dl>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Links</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="#" class="list-group-item list-group-item-action">Documentation</a>
+                    <a href="#" class="list-group-item list-group-item-action">API Reference</a>
+                    <a href="#" class="list-group-item list-group-item-action">Support Center</a>
+                    <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
