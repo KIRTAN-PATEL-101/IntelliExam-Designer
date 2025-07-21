@@ -17,3 +17,10 @@ build/
 
 venv/
 
+ai_backend/__pycache__/
+ai_backend/*.pyc
+ai_backend/*.pyo
+ai_backend/*.pyd
+ai_backend/.env
+
+

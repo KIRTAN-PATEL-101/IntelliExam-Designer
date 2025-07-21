@@ -1,0 +1,72 @@
+{
+  "name": "IntelliExam AI Backend",
+  "version": "1.0.0",
+  "description": "Smart AI question paper generator backend using LangGraph",
+  "main": "main.py",
+  "scripts": {
+    "start": "python main.py",
+    "test": "python test_setup.py",
+    "demo": "python demo_client.py",
+    "setup": "./setup.sh"
+  },
+  "dependencies": {
+    "langgraph": "0.2.16",
+    "langchain": "0.3.0",
+    "langchain-openai": "0.2.0",
+    "langchain-community": "0.3.0",
+    "pydantic": "2.8.2",
+    "python-dotenv": "1.0.1",
+    "fastapi": "0.115.0",
+    "uvicorn": "0.30.6",
+    "numpy": "1.26.4",
+    "scipy": "1.14.0",
+    "matplotlib": "3.8.4",
+    "sympy": "1.13.2",
+    "reportlab": "4.2.2",
+    "PyPDF2": "3.0.1",
+    "python-multipart": "0.0.9",
+    "httpx": "0.27.0",
+    "tiktoken": "0.7.0",
+    "scikit-learn": "1.5.1",
+    "nltk": "3.8.1"
+  },
+  "features": {
+    "question_types": [
+      "multiple_choice",
+      "true_false", 
+      "short_answer",
+      "long_answer",
+      "subjective",
+      "fill_blanks"
+    ],
+    "difficulty_levels": ["easy", "medium", "hard"],
+    "blooms_taxonomy": [
+      "remember",
+      "understand", 
+      "apply",
+      "analyze",
+      "evaluate",
+      "create"
+    ],
+    "equation_support": true,
+    "similarity_analysis": true,
+    "pdf_export": true,
+    "alternative_generation": true
+  },
+  "api_endpoints": {
+    "generate_questions": "POST /generate-questions",
+    "generate_alternative": "POST /generate-alternative", 
+    "analyze_similarity": "POST /analyze-similarity",
+    "export_pdf": "POST /export-pdf",
+    "health_check": "GET /health"
+  },
+  "environment": {
+    "required": ["OPENAI_API_KEY"],
+    "optional": [
+      "ANTHROPIC_API_KEY",
+      "DATABASE_URL",
+      "AI_BACKEND_HOST",
+      "AI_BACKEND_PORT"
+    ]
+  }
+}
