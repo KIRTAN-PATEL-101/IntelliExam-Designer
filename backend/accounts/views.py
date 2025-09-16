@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from accounts.mongodb import users_collection
+# from accounts.mongodb import users_collection
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -14,34 +14,50 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.permissions import AllowAny
+from datetime import datetime
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework import generics, status
 
-class RegisterView(APIView):
-    permission_classes = [AllowAny]  # ✅ anyone can call this
+# @api_view(['POST'])
+from .serializers import UserSerializer
+from .models import User  # Django ORM User
+from .mongo_models import CustomUser# your MongoDB user
 
-    def post(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
-        email = request.data.get("email")
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]  # <<< MUST ADD
 
-        if not username or not password or not email:
-            return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
+    def create(self, request, *args, **kwargs):
+        print("Debug view Update")
+        print("Request Data",request.data)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
 
-        if User.objects.filter(username=username).exists():
-            return Response({"error": "User already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        print("Django user created - Email:", user.email, "Type:", user.user_type)
 
-        if User.objects.filter(email=email).exists():
-            return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        mongo_user = CustomUser.objects.create(
+            first_name=user.first_name,
+            last_name=user.last_name,
+            email=user.email,
+            institution=request.data.get("institution"),
+            django_user_id=user.id,
+            user_type=user.user_type,
+        )
 
-        user = User.objects.create_user(username=username, password=password, email=email)
+        print("MongoDB user created with type:", mongo_user.user_type)
 
-        users_collection.insert_one({
-            "username": username,
-            "email": email, 
-            "django_user_id": user.id
-        })
+        refresh = RefreshToken.for_user(user)
 
-        return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
-
+        return Response({
+            "message": "User registered successfully",
+            "user_id": user.id,
+            "user_type": user.user_type,
+            "access": str(refresh.access_token),
+            "refresh": str(refresh)
+        }, status=status.HTTP_201_CREATED)
 
     
 # class LoginView(APIView):
@@ -94,54 +110,54 @@ class RegisterView(APIView):
 #     )
 
 #         return response
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+
 class LoginView(APIView):
-    permission_classes = [AllowAny]  # ✅ This fixes your 401 issue
+    permission_classes = [AllowAny]
 
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
 
+        # ✅ Validate required fields
         if not email or not password:
-            return Response({"error": "Email and password are required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Email and password are required"}, status=400)
 
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-
-        # Authenticate with username (Django default)
-        user = authenticate(username=user.username, password=password)
-
+        # ✅ Authenticate directly with email (USERNAME_FIELD = "email")
+        user = authenticate(request, email=email, password=password)
         if not user:
-            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Invalid credentials"}, status=401)
 
-        # Create JWT tokens
+        # ✅ Create JWT tokens
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
 
-        # Response with cookies
-        response = Response({"message": "Login successful"}, status=status.HTTP_200_OK)
-
+        # ✅ Send tokens in HttpOnly cookies
+        response = Response({"message": "Login successful"}, status=200)
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=False,  # True in production with HTTPS
+            secure=False,  # 🔒 change to True in production (HTTPS only)
             samesite="Lax",
-            max_age=5 * 60
+            max_age=5 * 60,  # 5 minutes
         )
-
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
             secure=False,
             samesite="Lax",
-            max_age=7 * 24 * 60 * 60
+            max_age=7 * 24 * 60 * 60,  # 7 days
         )
 
         return response
+
 
         # if not user:
         #     return Response({"error": "Invalid credentials"}, status=401)
@@ -199,6 +215,12 @@ class LoginView(APIView):
 
 
 #         return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def secure_data(request):
+    return Response({"message": f"Hello {request.user.username}, you are authorized!"})
+
+
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 

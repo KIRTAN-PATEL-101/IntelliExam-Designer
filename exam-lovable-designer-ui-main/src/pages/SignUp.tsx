@@ -23,11 +23,14 @@ import { AuthContext } from '@/context/AuthContext';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    agreeToTerms: false
+    agreeToTerms: false,
+    institution: '',
+     user_type: "professor"
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -62,9 +65,16 @@ const SignUp = () => {
       const response = await axios.post(
         'http://127.0.0.1:8000/api/auth/register/',
         {
-          username: formData.name,
+           first_name: formData.first_name,
+            last_name: formData.last_name,
           email: formData.email,
-          password: formData.password
+          password: formData.password,
+          institution: formData.institution,
+          user_type: formData.user_type
+        },{
+          headers: {
+        "Content-Type": "application/json"  // <<< ADD THIS
+      }
         }
       );
 
@@ -169,24 +179,79 @@ const SignUp = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Enter your full name"
-                      required
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
 
+{/* InsituteName */}
+              <div className="space-y-2">
+                <div className="space-y-2">
+  <Label>User Type</Label>
+  <div className="flex space-x-4">
+    <Button
+      type="button"
+      variant={formData.user_type === "admin" ? "default" : "outline"}
+      onClick={() => setFormData(prev => ({ ...prev, user_type: "admin" }))}
+      className={formData.user_type === "admin" ? "bg-primary text-white" : ""}
+    >
+      Admin
+    </Button>
+    <Button
+      type="button"
+      variant={formData.user_type === "professor" ? "default" : "outline"}
+      onClick={() => setFormData(prev => ({ ...prev, user_type: "professor" }))}
+      className={formData.user_type === "professor" ? "bg-primary text-white" : ""}
+    >
+      Professor
+    </Button>
+  </div>
+</div>
+  <Label htmlFor="institution">Institution Name</Label>
+  <div className="relative">
+    <GraduationCap className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+    <Input
+      id="institution"
+      name="institution"
+      type="text"
+      value={formData.institution}
+      onChange={handleChange}
+      placeholder="Enter your Institution name"
+      required
+      className="pl-10"
+    />
+  </div>
+</div>
+              <div className="space-y-2">
+  <Label htmlFor="first_name">First Name</Label>
+  <div className="relative">
+    <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+    <Input
+      id="first_name"
+      name="first_name"
+      type="text"
+      value={formData.first_name}
+      onChange={handleChange}
+      placeholder="Enter your first name"
+      required
+      className="pl-10"
+    />
+  </div>
+</div>
+
+{/* Last Name */}
+<div className="space-y-2">
+  <Label htmlFor="last_name">Last Name</Label>
+  <div className="relative">
+    <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+    <Input
+      id="last_name"
+      name="last_name"
+      type="text"
+      value={formData.last_name}
+      onChange={handleChange}
+      placeholder="Enter your last name"
+      required
+      className="pl-10"
+    />
+  </div>
+</div>
                 {/* Email */}
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
