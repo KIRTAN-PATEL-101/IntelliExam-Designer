@@ -122,8 +122,29 @@ USE_I18N = True
 USE_TZ = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-"http://localhost:8080",
-"http://127.0.0.1:8080", # React/Vite/Other frontend port
+    "http://localhost:3000",    # React default
+    "http://localhost:5173",    # Vite default
+    "http://localhost:8080",    # Common alternative
+    "http://127.0.0.1:3000", 
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8080",
+]
+
+# Additional CORS settings for cookie handling
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_EXPOSE_HEADERS = [
+    'set-cookie',
 ]
 
 # Static files (CSS, JavaScript, Images)
@@ -136,6 +157,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# For development only - be more permissive
 CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {

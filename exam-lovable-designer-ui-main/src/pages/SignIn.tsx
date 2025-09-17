@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { GraduationCap, Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { GraduationCap, Mail, Lock, ArrowRight, Eye, EyeOff, Shield, User, CheckCircle } from 'lucide-react';
 import { AuthContext } from "@/context/AuthContext";
+import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -20,16 +22,58 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [detectedUserType, setDetectedUserType] = useState<string | null>(null);
+  const [isCheckingUser, setIsCheckingUser] = useState(false);
 
-  const { isAuthenticated, loading, login } = useContext(AuthContext);
+  const { isAuthenticated, user, loading, login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // 🔄 Redirect if already logged in
+  // 🔄 Redirect if already logged in based on user type
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      navigate("/dashboard", { replace: true });
+    if (!loading && isAuthenticated && user) {
+      const redirectPath = user.user_type === 'admin' ? '/admin/dashboard' : '/dashboard';
+      navigate(redirectPath, { replace: true });
     }
-  }, [loading, isAuthenticated, navigate]);
+  }, [loading, isAuthenticated, user]); // Remove navigate from dependencies
+
+  // Function to check user type when email is entered
+  const checkUserType = async (email: string) => {
+    console.log('🔍 Checking user type for email:', email);
+    
+    if (!email || !email.includes('@')) {
+      console.log('❌ Invalid email format, resetting detection');
+      setDetectedUserType(null);
+      return;
+    }
+
+    console.log('⏳ Starting user type check...');
+    setIsCheckingUser(true);
+    
+    try {
+      // Create a simple API endpoint to check user type by email
+      const response = await axiosInstance.post('/auth/check-user-type/', {
+        email: email
+      });
+      
+      console.log('✅ User type detected:', response.data.user_type);
+      setDetectedUserType(response.data.user_type);
+    } catch (error: any) {
+      console.log('❌ User type check failed:', error?.response?.status, error?.response?.data);
+      // User doesn't exist or other error - reset detection
+      setDetectedUserType(null);
+    } finally {
+      console.log('🏁 User type check completed');
+      setIsCheckingUser(false);
+    }
+  };
+
+  // Debounced email check - DISABLED to prevent infinite refresh
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     checkUserType(formData.email);
+  //   }, 500);
+  //   return () => clearTimeout(timer);
+  // }, [formData.email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,16 +82,17 @@ const SignIn = () => {
 
     try {
       // ✅ call AuthContext login (handles axios + token storage)
-        await login(formData.email, formData.password);
-
-
-      // redirect after successful login
-      navigate("/dashboard", { replace: true });
+      const userInfo = await login(formData.email, formData.password);
+      
+      // Immediate redirect based on user type
+      const redirectPath = userInfo?.user_type === 'admin' ? '/admin/dashboard' : '/dashboard';
+      navigate(redirectPath, { replace: true });
+      
     } catch (err: any) {
       console.error("❌ Login failed:", err?.response?.data);
-      setError(err?.response?.data?.detail || "Login failed. Please try again.");
+      setError(err?.response?.data?.error || err?.response?.data?.detail || "Login failed. Please try again.");
     }
-
+    
     setIsLoading(false);
   };
 
@@ -101,6 +146,22 @@ const SignIn = () => {
                     />
                   </div>
                 </div>
+
+                {/* Debug Info - DISABLED */}
+                {/* {formData.email && (
+                  <div className="text-xs text-gray-500 p-2 bg-gray-100 rounded">
+                    Debug: Email = {formData.email} | UserType = {detectedUserType || 'none'} | Checking = {isCheckingUser ? 'yes' : 'no'}
+                  </div>
+                )} */}
+
+                {/* User Type Indicator - DISABLED to prevent refresh issues */}
+                {/* {(detectedUserType || isCheckingUser) && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-center p-4 border-2 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 shadow-sm transition-all duration-500 ease-in-out transform scale-100">
+                      User type indicator content...
+                    </div>
+                  </div>
+                )} */}
 
                 {/* Password Field */}
                 <div className="space-y-2">

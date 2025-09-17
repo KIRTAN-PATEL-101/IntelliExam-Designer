@@ -54,6 +54,8 @@ class RegisterView(generics.CreateAPIView):
         return Response({
             "message": "User registered successfully",
             "user_id": user.id,
+
+            
             "user_type": user.user_type,
             "access": str(refresh.access_token),
             "refresh": str(refresh)
@@ -137,24 +139,45 @@ class LoginView(APIView):
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
 
-        # ✅ Send tokens in HttpOnly cookies
-        response = Response({"message": "Login successful"}, status=200)
+        # ✅ Send tokens in HttpOnly cookies with user info
+        response = Response({
+            "message": "Login successful",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "user_type": user.user_type,
+                "first_name": user.first_name,
+                "last_name": user.last_name
+            },
+            "access": access_token,  # Also send in body for Authorization header
+            "refresh": refresh_token
+        }, status=200)
+        # Set cookies with proper cross-domain settings
+        cookie_settings = {
+            "httponly": True,
+            "secure": False,  # 🔒 change to True in production (HTTPS only)
+            "samesite": "Lax",
+            "path": "/",
+            "domain": None,  # Let browser handle domain
+        }
+        
         response.set_cookie(
             key="access_token",
             value=access_token,
-            httponly=True,
-            secure=False,  # 🔒 change to True in production (HTTPS only)
-            samesite="Lax",
-            max_age=5 * 60,  # 5 minutes
+            max_age=30 * 60,  # Increased to 30 minutes for testing
+            **cookie_settings
         )
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
-            httponly=True,
-            secure=False,
-            samesite="Lax",
             max_age=7 * 24 * 60 * 60,  # 7 days
+            **cookie_settings
         )
+        
+        print(f"🍪 Setting cookies for user: {user.email}")
+        print(f"✅ Access token set: {access_token[:20]}...")
+        print(f"✅ Refresh token set: {refresh_token[:20]}...")
+        print(f"🔧 Cookie settings: {cookie_settings}")
 
         return response
 
@@ -287,6 +310,29 @@ class ResetPasswordView(APIView):
         user.save()
 
         return Response({"message": "Password has been reset."}, status=200)
+
+
+class CheckUserTypeView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        """Check user type by email for login UI hints"""
+        email = request.data.get('email')
+        
+        if not email:
+            return Response({"error": "Email is required"}, status=400)
+        
+        try:
+            user = User.objects.get(email=email)
+            return Response({
+                "user_type": user.user_type,
+                "exists": True
+            }, status=200)
+        except User.DoesNotExist:
+            return Response({
+                "error": "User not found",
+                "exists": False
+            }, status=404)
     
 
 class AuthCheckView(APIView):
@@ -295,9 +341,11 @@ class AuthCheckView(APIView):
     def get(self, request):
         return Response({
             "authenticated": True,
-            "email": request.user.email,  # Return email instead of username
+            "email": request.user.email,
             "user_id": request.user.id,
-            # "name": request.user.get_full_name()  # Optional if you store names
+            "user_type": request.user.user_type,  # Add user_type
+            "first_name": request.user.first_name,
+            "last_name": request.user.last_name,
         })
     
 class TestMongoView(APIView):

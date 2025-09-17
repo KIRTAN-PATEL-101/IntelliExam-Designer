@@ -9,7 +9,7 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, logout } = useContext(AuthContext);
+  const { isAuthenticated, user, logout } = useContext(AuthContext);
 
   const navItems = [
     { name: 'Home', path: '/' },
@@ -70,6 +70,13 @@ const Navigation = () => {
                       Dashboard
                     </Button>
                   </Link>
+                  {user?.user_type === 'admin' && (
+                    <Link to="/admin/dashboard">
+                      <Button variant="ghost" size="sm" className="hover:bg-accent text-orange-600">
+                        Admin
+                      </Button>
+                    </Link>
+                  )}
                   <Button 
                     size="sm" 
                     variant="destructive" 
@@ -136,6 +143,13 @@ const Navigation = () => {
                         Dashboard
                       </Button>
                     </Link>
+                    {user?.user_type === 'admin' && (
+                      <Link to="/admin/dashboard" onClick={() => setIsOpen(false)}>
+                        <Button variant="ghost" size="sm" className="w-full justify-start text-orange-600">
+                          Admin Dashboard
+                        </Button>
+                      </Link>
+                    )}
                     <Button
                       variant="destructive"
                       size="sm"

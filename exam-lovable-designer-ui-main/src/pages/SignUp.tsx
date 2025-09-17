@@ -44,7 +44,7 @@ const SignUp = () => {
     if (!loading && isAuthenticated) {
       navigate('/');
     }
-  }, [loading, isAuthenticated, navigate]);
+  }, [loading, isAuthenticated]); // Remove navigate from dependencies
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,43 +1,36 @@
 from django.db import models
-from django.contrib.auth.models import (
-    AbstractBaseUser, BaseUserManager, PermissionsMixin
-)
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 
-class UserManager(BaseUserManager):
+class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
-        """
-        Create and return a user with email and password.
-        """
         if not email:
-            raise ValueError("Users must have an email address")
-
+            raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
-
-        # ✅ Always preserve user_type or default to professor
-        user_type = extra_fields.pop("user_type", "professor")
-        extra_fields["user_type"] = user_type
         
-        user = self.model(email=email, **extra_fields)  # !!! don’t pass user_type twice
-
+        # Set default values for Django permission fields
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        """
-        Create and return a superuser with email and password.
-        """
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('user_type', 'admin')
 
-        if extra_fields.get("is_staff") is not True:
-            raise ValueError("Superuser must have is_staff=True.")
-        if extra_fields.get("is_superuser") is not True:
-            raise ValueError("Superuser must have is_superuser=True.")
-
-        # ✅ Force user_type=admin for superusers
-        extra_fields.setdefault("user_type", "admin")
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
 
         return self.create_user(email, password, **extra_fields)
 
@@ -61,14 +54,21 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Django permissions integration
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    is_superuser = models.BooleanField(default=False)  # ✅ Explicit field
+    is_superuser = models.BooleanField(default=False)
+
+    # Add date_joined field with default
+    date_joined = models.DateTimeField(default=timezone.now)
 
     # Manager
-    objects = UserManager()
+    objects = CustomUserManager()
 
     # Login with email instead of username
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []  # removes username requirement for superuser
 
     def __str__(self):
-        return self.email
+        return str(self.email)
+
+    class Meta(AbstractBaseUser.Meta, PermissionsMixin.Meta):
+        verbose_name = _('user')
+        verbose_name_plural = _('users')

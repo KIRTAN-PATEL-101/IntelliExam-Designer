@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,22 +31,30 @@ import {
 import axios from 'axios';
 
 const Dashboard = () => {
-  const { isAuthenticated, user } = useContext(AuthContext);
+  const { isAuthenticated, user, loading } = useContext(AuthContext);
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [papers, setPapers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
+    // Only redirect admin users after auth check is complete
+    if (!loading && isAuthenticated && user?.user_type === 'admin') {
+      navigate('/admin/dashboard', { replace: true });
+      return;
+    }
+    
+    // Only fetch data if authenticated
     if (isAuthenticated) {
       fetchDashboardData();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user, loading]); // Add loading to dependencies
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
+      setDataLoading(true);
       const questionsResponse = await axios.get('http://localhost:8000/questions?limit=50');
       setQuestions(questionsResponse.data);
       
@@ -68,13 +77,13 @@ const Dashboard = () => {
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
 
   // Do not block the dashboard if unauthenticated; show a notice instead
 
-  if (loading) {
+  if (dataLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
         <Navigation />
@@ -103,7 +112,7 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" onClick={() => (window.location.href = '/signin')}>Sign In</Button>
+              <Button variant="outline" onClick={() => navigate('/signin')}>Sign In</Button>
             </CardContent>
           </Card>
         )}
