@@ -14,6 +14,7 @@ from models import (
     QuestionPaper,
     AlternativeQuestionRequest
 )
+from .gemini_client import configure as gemini_config, chat_completion
 
 load_dotenv()
 
@@ -31,6 +32,10 @@ app.add_middleware(
 # Initialize the question generator and PDF exporter
 question_generator = QuestionGeneratorGraph()
 pdf_exporter = PDFExporter()
+
+# Prefer GEMINI_API_KEY; fall back to OPENAI_API_KEY if present for transition
+gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY")
+gemini_config(gemini_key)
 
 @app.get("/")
 async def root():

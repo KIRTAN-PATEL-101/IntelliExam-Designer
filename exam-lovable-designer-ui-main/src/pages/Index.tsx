@@ -1,5 +1,7 @@
 
 import { Link } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Navigation from '@/components/Navigation';
@@ -18,6 +20,8 @@ import {
 } from 'lucide-react';
 
 const Index = () => {
+  const { isAuthenticated } = useContext(AuthContext);
+
   const features = [
     {
       icon: Brain,
@@ -54,25 +58,26 @@ const Index = () => {
       
       {/* Hero Section */}
       <section className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <div className="mb-8">
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-accent text-primary text-sm font-medium mb-6">
-                <Zap className="h-4 w-4 mr-2" />
-                AI-Powered Question Generation
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                Intelligent Question Paper
-                <span className="block bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                  Generator for Educators
-                </span>
-              </h1>
-              <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                Create comprehensive, professional examination papers with AI assistance. 
-                Streamline your assessment process with advanced features tailored for academic excellence.
-              </p>
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="mb-8">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-accent text-primary text-sm font-medium mb-6">
+              <Zap className="h-4 w-4 mr-2" />
+              AI-Powered Question Generation
             </div>
-            
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              Intelligent Question Paper
+              <span className="block bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                Generator for Educators
+              </span>
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+              Create comprehensive, professional examination papers with AI assistance. 
+              Streamline your assessment process with advanced features tailored for academic excellence.
+            </p>
+          </div>
+          
+          {/* Show CTAs only if NOT logged in */}
+          {!isAuthenticated && (
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link to="/signup">
                 <Button 
@@ -93,17 +98,17 @@ const Index = () => {
                 </Button>
               </Link>
             </div>
+          )}
 
-            {/* Hero Image Placeholder */}
-            <div className="relative max-w-4xl mx-auto">
-              <div className="aspect-video bg-gradient-to-br from-accent to-secondary rounded-2xl shadow-2xl overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=1200&q=80"
-                  alt="Educator using IntelliExam Designer"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
-              </div>
+          {/* Hero Image */}
+          <div className="relative max-w-4xl mx-auto">
+            <div className="aspect-video bg-gradient-to-br from-accent to-secondary rounded-2xl shadow-2xl overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=1200&q=80"
+                alt="Educator using IntelliExam Designer"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
             </div>
           </div>
         </div>
@@ -165,70 +170,64 @@ const Index = () => {
 
       {/* About Section */}
       <section className="py-20 bg-gradient-secondary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/50 text-primary text-sm font-medium mb-6">
-                <Award className="h-4 w-4 mr-2" />
-                About IntelliExam Designer
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Empowering Educators with
-                <span className="block text-primary">Intelligent Assessment Tools</span>
-              </h2>
-              <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                IntelliExam Designer revolutionizes the way educators create examination papers. 
-                Our AI-powered platform combines pedagogical expertise with cutting-edge technology 
-                to deliver comprehensive assessment solutions.
-              </p>
-              
-              <div className="space-y-4 mb-8">
-                <div className="flex items-start">
-                  <CheckCircle className="h-6 w-6 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900">Advanced AI Integration</h4>
-                    <p className="text-gray-600">Leveraging machine learning for intelligent question generation</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircle className="h-6 w-6 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900">Educator-Centric Design</h4>
-                    <p className="text-gray-600">Built by educators, for educators with intuitive workflows</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircle className="h-6 w-6 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900">Institution-Ready</h4>
-                    <p className="text-gray-600">Scalable solutions for schools, colleges, and universities</p>
-                  </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/50 text-primary text-sm font-medium mb-6">
+              <Award className="h-4 w-4 mr-2" />
+              About IntelliExam Designer
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              Empowering Educators with
+              <span className="block text-primary">Intelligent Assessment Tools</span>
+            </h2>
+            <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+              IntelliExam Designer revolutionizes the way educators create examination papers. 
+              Our AI-powered platform combines pedagogical expertise with cutting-edge technology 
+              to deliver comprehensive assessment solutions.
+            </p>
+            
+            <div className="space-y-4 mb-8">
+              <div className="flex items-start">
+                <CheckCircle className="h-6 w-6 text-green-500 mr-3 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Advanced AI Integration</h4>
+                  <p className="text-gray-600">Leveraging machine learning for intelligent question generation</p>
                 </div>
               </div>
-
-              <Link to="/more-info">
-                <Button 
-                  size="lg"
-                  className="gradient-primary text-white hover:opacity-90 transition-all duration-200"
-                >
-                  Discover All Features
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+              <div className="flex items-start">
+                <CheckCircle className="h-6 w-6 text-green-500 mr-3 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Educator-Centric Design</h4>
+                  <p className="text-gray-600">Built by educators, for educators with intuitive workflows</p>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <CheckCircle className="h-6 w-6 text-green-500 mr-3 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Institution-Ready</h4>
+                  <p className="text-gray-600">Scalable solutions for schools, colleges, and universities</p>
+                </div>
+              </div>
             </div>
 
-            <div className="relative">
-              <div className="aspect-square bg-white rounded-3xl shadow-2xl overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80"
-                  alt="Professional educator working"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              {/* Floating elements */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 gradient-primary rounded-2xl opacity-20 animate-pulse"></div>
-              <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-purple-200 rounded-full opacity-30"></div>
+            <Link to="/more-info">
+              <Button size="lg" className="gradient-primary text-white hover:opacity-90 transition-all duration-200">
+                Discover All Features
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="relative">
+            <div className="aspect-square bg-white rounded-3xl shadow-2xl overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80"
+                alt="Professional educator working"
+                className="w-full h-full object-cover"
+              />
             </div>
+            <div className="absolute -top-4 -right-4 w-24 h-24 gradient-primary rounded-2xl opacity-20 animate-pulse"></div>
+            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-purple-200 rounded-full opacity-30"></div>
           </div>
         </div>
       </section>
@@ -245,27 +244,30 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup">
-              <Button 
-                size="lg" 
-                variant="secondary"
-                className="bg-white text-primary hover:bg-gray-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                Start Free Trial
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/contact">
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="border-white text-white hover:bg-white/10 transition-all duration-200"
-              >
-                Contact Sales
-              </Button>
-            </Link>
-          </div>
+          {/* Hide signup CTA if logged in */}
+          {!isAuthenticated && (
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/signup">
+                <Button 
+                  size="lg" 
+                  variant="secondary"
+                  className="bg-white text-primary hover:bg-gray-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/contact">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="border-white text-white hover:bg-white/10 transition-all duration-200"
+                >
+                  Contact Sales
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

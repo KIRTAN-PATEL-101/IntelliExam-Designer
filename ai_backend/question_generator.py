@@ -17,6 +17,8 @@ from models import (
 )
 from similarity_analyzer import SimilarityAnalyzer
 from equation_handler import EquationHandler
+from .gemini_client import chat_completion
+import os
 
 class QuestionGeneratorState(BaseModel):
     request: QuestionGenerationRequest

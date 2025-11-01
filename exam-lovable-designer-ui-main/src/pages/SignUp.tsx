@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,19 +19,32 @@ import {
   CheckCircle,
   Shield
 } from 'lucide-react';
+import { AuthContext } from '@/context/AuthContext';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    agreeToTerms: false
+    agreeToTerms: false,
+    institution: '',
+     user_type: "professor"
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const navigate = useNavigate();
+  const { isAuthenticated, loading } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate('/');
+    }
+  }, [loading, isAuthenticated]); // Remove navigate from dependencies
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,13 +62,24 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/signup', {
-        email: formData.email,
-        password: formData.password
-      });
+      const response = await axios.post(
+        'http://127.0.0.1:8000/api/auth/register/',
+        {
+           first_name: formData.first_name,
+            last_name: formData.last_name,
+          email: formData.email,
+          password: formData.password,
+          institution: formData.institution,
+          user_type: formData.user_type
+        },{
+          headers: {
+        "Content-Type": "application/json"  // <<< ADD THIS
+      }
+        }
+      );
 
       console.log('✅ Signup successful:', response.data);
-      alert(response.data.message);
+      alert('Signup successful!');
       setIsSuccess(true);
     } catch (error: any) {
       console.error('❌ Signup failed:', error?.response?.data);
@@ -114,20 +138,15 @@ const SignUp = () => {
                     Welcome to IntelliExam Designer! We've sent a verification email to{' '}
                     <span className="font-medium text-primary">{formData.email}</span>
                   </p>
-                  <div className="space-y-4">
-                    <p className="text-sm text-gray-500">
-                      Please check your email and click the verification link to activate your account.
-                    </p>
-                    <Link to="/signin">
-                      <Button
-                        size="lg"
-                        className="w-full gradient-primary text-white hover:opacity-90 transition-all duration-200"
-                      >
-                        Continue to Sign In
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Button>
-                    </Link>
-                  </div>
+                  <Link to="/signin">
+                    <Button
+                      size="lg"
+                      className="w-full gradient-primary text-white hover:opacity-90"
+                    >
+                      Continue to Sign In
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -160,23 +179,80 @@ const SignUp = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Enter your full name"
-                      required
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
 
+{/* InsituteName */}
+              <div className="space-y-2">
+                <div className="space-y-2">
+  <Label>User Type</Label>
+  <div className="flex space-x-4">
+    <Button
+      type="button"
+      variant={formData.user_type === "admin" ? "default" : "outline"}
+      onClick={() => setFormData(prev => ({ ...prev, user_type: "admin" }))}
+      className={formData.user_type === "admin" ? "bg-primary text-white" : ""}
+    >
+      Admin
+    </Button>
+    <Button
+      type="button"
+      variant={formData.user_type === "professor" ? "default" : "outline"}
+      onClick={() => setFormData(prev => ({ ...prev, user_type: "professor" }))}
+      className={formData.user_type === "professor" ? "bg-primary text-white" : ""}
+    >
+      Professor
+    </Button>
+  </div>
+</div>
+  <Label htmlFor="institution">Institution Name</Label>
+  <div className="relative">
+    <GraduationCap className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+    <Input
+      id="institution"
+      name="institution"
+      type="text"
+      value={formData.institution}
+      onChange={handleChange}
+      placeholder="Enter your Institution name"
+      required
+      className="pl-10"
+    />
+  </div>
+</div>
+              <div className="space-y-2">
+  <Label htmlFor="first_name">First Name</Label>
+  <div className="relative">
+    <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+    <Input
+      id="first_name"
+      name="first_name"
+      type="text"
+      value={formData.first_name}
+      onChange={handleChange}
+      placeholder="Enter your first name"
+      required
+      className="pl-10"
+    />
+  </div>
+</div>
+
+{/* Last Name */}
+<div className="space-y-2">
+  <Label htmlFor="last_name">Last Name</Label>
+  <div className="relative">
+    <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+    <Input
+      id="last_name"
+      name="last_name"
+      type="text"
+      value={formData.last_name}
+      onChange={handleChange}
+      placeholder="Enter your last name"
+      required
+      className="pl-10"
+    />
+  </div>
+</div>
+                {/* Email */}
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
                   <div className="relative">
@@ -194,6 +270,7 @@ const SignUp = () => {
                   </div>
                 </div>
 
+                {/* Password */}
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -211,7 +288,7 @@ const SignUp = () => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-3 text-gray-400"
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
@@ -244,6 +321,7 @@ const SignUp = () => {
                   )}
                 </div>
 
+                {/* Confirm Password */}
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
                   <div className="relative">
@@ -261,7 +339,7 @@ const SignUp = () => {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-3 text-gray-400"
                     >
                       {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
@@ -272,6 +350,7 @@ const SignUp = () => {
                     )}
                 </div>
 
+                {/* Terms */}
                 <div className="flex items-start space-x-2">
                   <Checkbox
                     id="agreeToTerms"
@@ -294,6 +373,7 @@ const SignUp = () => {
                   </Label>
                 </div>
 
+                {/* Submit */}
                 <Button
                   type="submit"
                   size="lg"
@@ -302,7 +382,7 @@ const SignUp = () => {
                     !formData.agreeToTerms ||
                     formData.password !== formData.confirmPassword
                   }
-                  className="w-full gradient-primary text-white hover:opacity-90 transition-all"
+                  className="w-full gradient-primary text-white hover:opacity-90"
                 >
                   {isLoading ? (
                     <div className="flex items-center">
@@ -318,6 +398,7 @@ const SignUp = () => {
                 </Button>
               </form>
 
+              {/* Footer */}
               <div className="mt-8 relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300" />
